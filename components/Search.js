@@ -2,16 +2,27 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { Form, Button } from "react-bootstrap";
+import { useAtom } from "jotai";
+import { searchHistoryAtom } from "@/store";
+import { addToHistory } from "@/lib/userData";
 
 export default function Search() {
   const [searchField, setSearchField] = useState("");
   const router = useRouter();
+  const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
 
-  const submitForm = (e) => {
+  const submitForm = async (e) => {
     e.preventDefault();
     const searchQuery = searchField.trim();
     if (searchQuery) {
-      router.push(`/artwork?title=true&q=${searchQuery}`);
+      const queryString = `title=true&q=${searchQuery}`;
+
+      //  Save to history
+      const updatedHistory = await addToHistory(queryString);
+      setSearchHistory(updatedHistory);
+
+      // Go to results page
+      router.push(`/artwork?${queryString}`);
       setSearchField(""); // clear the input
     }
   };
